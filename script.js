@@ -11,6 +11,10 @@ const products = [
 
 // DOM elements
 const productList = document.getElementById("product-list");
+const cartList = document.getElementById("cart-list");
+const clearCartBtn = document.getElementById("clear-cart-btn");
+
+let cart = JSON.parse(sessionStorage.getItem("shoppingCart")) || [];
 
 // Render product list
 function renderProducts() {
@@ -22,16 +26,63 @@ function renderProducts() {
 }
 
 // Render cart list
-function renderCart() {}
+function renderCart() {
+	cartList.innerHTML = ""; // Clear the cart list before rendering
+	if (cart.length === 0) {
+	    cartList.innerHTML = "<li>Your cart is empty</li>";
+	    return;
+
+}
+	cart.forEach((item) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${item.name} - $${item.price} 
+      <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>
+    `;
+    cartList.appendChild(li);
+  });
+}
 
 // Add item to cart
-function addToCart(productId) {}
+function addToCart(productId) {
+  const product = products.find((p) => p.id === productId);
+  if (product) {
+    cart.push(product);
+    sessionStorage.setItem("shoppingCart", JSON.stringify(cart));
+    renderCart();
+  }
+}
 
 // Remove item from cart
-function removeFromCart(productId) {}
+function removeFromCart(productId) {
+  cart = cart.filter((item) => item.id !== productId);
+  sessionStorage.setItem("shoppingCart", JSON.stringify(cart));
+  renderCart();
+}
 
 // Clear cart
-function clearCart() {}
+function clearCart() {
+  cart = [];
+  sessionStorage.setItem("shoppingCart", JSON.stringify(cart));
+  renderCart();
+}
+
+// Event Listeners
+productList.addEventListener("click", (e) => {
+  if (e.target.classList.contains("add-to-cart-btn")) {
+    const productId = parseInt(e.target.dataset.id, 10);
+    addToCart(productId);
+  }
+});
+
+cartList.addEventListener("click", (e) => {
+  if (e.target.classList.contains("remove-from-cart-btn")) {
+    const productId = parseInt(e.target.dataset.id, 10);
+    removeFromCart(productId);
+  }
+});
+
+clearCartBtn.addEventListener("click", clearCart);
 
 // Initial render
 renderProducts();
